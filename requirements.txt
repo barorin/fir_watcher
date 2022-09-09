@@ -1,0 +1,20 @@
+# Frontend
+streamlit
+
+# Backend
+pandas
+plotly
+sqlalchemy
+
+# Scraping
+tenacity # リトライ実装
+beautifulsoup4
+chromedriver_binary
+pymupdf
+selenium
+
+# Code Formatter
+flake8
+black
+isort
+mypy

@@ -1,0 +1,8 @@
+# folder
+__pycache__/
+env_fir/
+dev/
+pdf/
+
+# file
+*.db
