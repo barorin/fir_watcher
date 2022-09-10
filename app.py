@@ -209,11 +209,11 @@ all_countries = st.sidebar.checkbox("Select All (Countries)")
 
 if all_countries:
     countries_multi_selected = st.sidebar.multiselect(
-        "Countries", vars_countries, default=vars_countries
+        "Country", vars_countries, default=vars_countries
     )
 else:
     countries_multi_selected = st.sidebar.multiselect(
-        "Countries",
+        "Country",
         vars_countries,
         default=[
             "United States",
@@ -229,7 +229,7 @@ else:
 
 # 産業選択
 industries_multi_selected = st.sidebar.multiselect(
-    "Industries", vars_industries, default=vars_industries
+    "Industry", vars_industries, default=vars_industries
 )
 
 # レイアウト
@@ -243,12 +243,12 @@ df = df[(df["report_date"] >= start_date) & (df["report_date"] <= end_date)]
 df = df[df["search_text"].str.contains(input_word)]
 
 # 棒グラフ
-bar = make_bar(df, "report_date", "Issuers", "report_date", "issuer")
+bar = make_bar(df, "report_date", "Issuer", "report_date", "issuer")
 
 # 円グラフ
 pie_firm = make_pie(df, "firm_name", "Firm name")
-pie_country = make_pie(df, "country", "Countries")
-pie_industry = make_pie(df, "industry", "Industries")
+pie_country = make_pie(df, "country", "Country")
+pie_industry = make_pie(df, "industry", "Industry")
 
 # 棒グラフと円グラフの配置
 st.plotly_chart(bar, use_container_width=True)
