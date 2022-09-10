@@ -29,7 +29,10 @@ def get_df():
         df["type_of_audit_and_related_area_affected"]
         + df["description_of_the_deficiencies_identified"]
     )
-
+    # 並べ替え
+    df = df.sort_values(
+        ["report_date", "firm_name", "issuer"], ascending=[False, True, True]
+    )
     return df
 
 
@@ -119,7 +122,7 @@ def make_table(df):
             "description_of_the_deficiencies_identified",
         ]
     ]
-    df_table["report_date"] = df_table["report_date"].dt.date  # 年月日のみにする
+
     return df_table
 
 
