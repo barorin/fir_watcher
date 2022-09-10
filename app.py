@@ -2,6 +2,8 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from sqlalchemy import create_engine
+from st_aggrid import AgGrid
+from st_aggrid.grid_options_builder import GridOptionsBuilder
 
 
 @st.cache(allow_output_mutation=True)
@@ -121,10 +123,26 @@ def make_table(df):
     return df_table
 
 
+@st.experimental_memo
+def set_aggrid_configure():
+    """aggridのオプション設定"""
+    gb = GridOptionsBuilder.from_dataframe(df_table)
+    gb.configure_default_column(wrapText=True, autoHeight=True)
+    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=10)
+    gb.configure_column(
+        "report_date", type=["customDateTimeFormat"], custom_format_string="yyyy-MM-dd"
+    )
+    gb.configure_column("description_of_the_deficiencies_identified", width=700)
+    grid_options = gb.build()
+
+    return grid_options
+
+
 # サイト設定
 st.set_page_config(
     page_title="Firm Inspection Reports Watcher",
     page_icon=":dog:",
+    initial_sidebar_state="collapsed",
     layout="wide",  # スクリーン全体を使ってグラフが表示されるようにする
 )
 
@@ -241,38 +259,5 @@ col3.plotly_chart(pie_industry, use_container_width=True)
 
 # テーブル
 df_table = make_table(df)
-
-# 1ページあたりの表示数
-num_per_page = 20
-
-# ページネーション設定
-if "page_number" not in st.session_state:
-    st.session_state.page_number = 0
-
-last_page = len(df_table) // num_per_page
-
-prev, page_num, next = st.columns([1, 10, 1])
-if next.button("Next"):
-    if st.session_state.page_number + 1 > last_page:
-        st.session_state.page_number = 0
-    else:
-        st.session_state.page_number += 1
-
-if prev.button("Previous"):
-    if st.session_state.page_number - 1 < 0:
-        st.session_state.page_number = last_page
-    else:
-        st.session_state.page_number -= 1
-
-page_num.markdown(
-    f"<p style='text-align: center;'> \
-        {st.session_state.page_number + 1} / {last_page + 1}</p>",
-    unsafe_allow_html=True,
-)
-
-# dfの表示範囲
-start_idx = st.session_state.page_number * num_per_page
-end_idx = (st.session_state.page_number + 1) * num_per_page
-
-# df表示
-st.dataframe(df_table.iloc[start_idx:end_idx], height=750)
+grid_options = set_aggrid_configure()
+AgGrid(df_table, gridOptions=grid_options, fit_columns_on_grid_load=True, height=750)
