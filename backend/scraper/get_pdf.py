@@ -12,3 +12,4 @@ engine = create_engine(
 # PDFのダウンロード
 links = pd.read_sql(sql="SELECT pdf_url FROM links", con=engine)
 get_pdf("./pdf", links["pdf_url"])
+print('Done get_pdf')
