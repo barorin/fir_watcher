@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -63,6 +65,22 @@ def make_vars(df):
     vars_firm_name = list(set([var for var in df["firm_name"]]))
     vars_firm_name = sorted(vars_firm_name)
 
+    default_firm_name = list(
+        set(
+            [
+                var
+                for var in df["firm_name"]
+                if re.search(
+                    r"^(?=.*deloitte).*$|^(?=.*kpmg).*$|^(?=.*ernst).*$"
+                    + r"|^(?=.*pricewaterhousecoopers).*$",
+                    var,
+                    flags=re.IGNORECASE,
+                )
+            ]
+        )
+    )
+    default_firm_name = sorted(default_firm_name)
+
     # 国名選択用
     vars_countries = list(set([var for var in df["country"]]))
     vars_countries = sorted(vars_countries)
@@ -71,7 +89,7 @@ def make_vars(df):
     vars_industries = list(set([var for var in df["industry"]]))
     vars_industries = sorted(vars_industries)
 
-    return vars_firm_name, vars_countries, vars_industries
+    return vars_firm_name, default_firm_name, vars_countries, vars_industries
 
 
 @st.experimental_memo
@@ -127,9 +145,9 @@ def make_table(df):
 
 
 @st.experimental_memo
-def set_aggrid_configure():
+def set_aggrid_configure(df):
     """aggridのオプション設定"""
-    gb = GridOptionsBuilder.from_dataframe(df_table)
+    gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_default_column(wrapText=True, autoHeight=True)
     gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=10)
     gb.configure_column(
@@ -167,7 +185,7 @@ st.sidebar.download_button(
 st.sidebar.markdown("## Settings")
 
 # 選択肢作成
-vars_firm_name, vars_countries, vars_industries = make_vars(df)
+vars_firm_name, default_firm_name, vars_countries, vars_industries = make_vars(df)
 
 # 検索フォーム
 input_word = st.sidebar.text_input(
@@ -197,38 +215,13 @@ if all_firm:
     )
 else:
     firm_name_multi_selected = st.sidebar.multiselect(
-        "Firm name",
-        vars_firm_name,
-        default=[
-            "Deloitte LLP",
-            "KPMG LLP",
-            "Ernst & Young LLP",
-            "PricewaterhouseCoopers LLP",
-        ],
+        "Firm name", vars_firm_name, default=default_firm_name
     )
 
 # 国名選択
-all_countries = st.sidebar.checkbox("Select All (Country)")
-
-if all_countries:
-    countries_multi_selected = st.sidebar.multiselect(
-        "Country", vars_countries, default=vars_countries
-    )
-else:
-    countries_multi_selected = st.sidebar.multiselect(
-        "Country",
-        vars_countries,
-        default=[
-            "United States",
-            "Canada",
-            "Australia",
-            "Singapore",
-            "United Kingdom",
-            "France",
-            "Japan",
-            "Germany",
-        ],
-    )
+countries_multi_selected = st.sidebar.multiselect(
+    "Country", vars_countries, default=vars_countries
+)
 
 # 産業選択
 industries_multi_selected = st.sidebar.multiselect(
@@ -262,5 +255,5 @@ col3.plotly_chart(pie_industry, use_container_width=True)
 
 # テーブル
 df_table = make_table(df)
-grid_options = set_aggrid_configure()
+grid_options = set_aggrid_configure(df_table)
 AgGrid(df_table, gridOptions=grid_options, fit_columns_on_grid_load=True, height=750)
