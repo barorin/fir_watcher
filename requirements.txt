@@ -1,6 +1,9 @@
 # Frontend
 streamlit
 streamlit-aggrid
+streamlit-authenticator
+PyYAML
+types-PyYAML
 
 # Backend
 pandas
@@ -10,8 +13,7 @@ sqlalchemy
 # Scraping
 tenacity # リトライ実装
 beautifulsoup4
-# 要バージョン確認
-# chromedriver_binary==
+# chromedriver_binary== # 要バージョン確認
 pymupdf
 selenium
 

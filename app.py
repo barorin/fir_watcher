@@ -3,9 +3,130 @@ import re
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit_authenticator as stauth
+import yaml
 from sqlalchemy import create_engine
 from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
+
+
+def main():
+    # ソースデータ取り込み
+    df = get_df()
+
+    # サイドバー
+    st.sidebar.title("Firm Inspectoin Reports Watcher :dog:")
+
+    # logoutメソッドでaurhenciationの値をNoneにする
+    st.sidebar.markdown(f"## Login User : {name}")
+    authenticator.logout("Logout", "sidebar")
+
+    # CSVダウンロード
+    st.sidebar.markdown("## Download")
+    csv = make_csv(df)
+    st.sidebar.download_button(
+        label="Download CSV file",
+        data=csv,
+        file_name="firm_inspection_reports.csv",
+        mime="text/csv",
+        help="You can download the original data in CSV.",
+    )
+
+    # セッティング
+    st.sidebar.markdown("## Settings")
+
+    # 選択肢作成
+    vars_firm_name, default_firm_name, vars_countries, vars_industries = make_vars(df)
+
+    # 検索フォーム
+    input_word = st.sidebar.text_input(
+        label="Search text",
+        help='Search from "Type of audit and related area affected"'
+        + ' and "Description of the deficiencies identified".',
+        value="",
+        placeholder="Enter keywords",
+    )
+
+    # レポート範囲選択
+    min_value, max_value = make_min_max_date(df)
+    start_date, end_date = st.sidebar.slider(
+        "Report date",
+        min_value=min_value,
+        max_value=max_value,
+        value=(min_value, max_value),
+        format="YY-MM-DD",
+    )
+
+    # ファーム選択
+    all_firm = st.sidebar.checkbox("Select All (Firm name)")
+
+    if all_firm:
+        firm_name_multi_selected = st.sidebar.multiselect(
+            "Firm name", vars_firm_name, default=vars_firm_name
+        )
+    else:
+        firm_name_multi_selected = st.sidebar.multiselect(
+            "Firm name", vars_firm_name, default=default_firm_name
+        )
+
+    # 国名選択
+    countries_multi_selected = st.sidebar.multiselect(
+        "Country", vars_countries, default=vars_countries
+    )
+
+    # 産業選択
+    industries_multi_selected = st.sidebar.multiselect(
+        "Industry", vars_industries, default=vars_industries
+    )
+
+    # レイアウト
+    st.header("Part I.A: Audits with Unsupported Opinions")
+    st.caption("Source: Public Company Accounting Oversight Board, www.pcaobus.org")
+
+    # グラフ用df
+    df = df[df["firm_name"].isin(firm_name_multi_selected)]
+    df = df[df["country"].isin(countries_multi_selected)]
+    df = df[df["industry"].isin(industries_multi_selected)]
+    df = df[(df["report_date"] >= start_date) & (df["report_date"] <= end_date)]
+    df = df[df["search_text"].str.contains(input_word)]
+
+    # 棒グラフ
+    bar = make_bar(df, "report_date", "Issuer", "report_date", "issuer")
+
+    # 円グラフ
+    pie_firm = make_pie(df, "firm_name", "Firm name")
+    pie_country = make_pie(df, "country", "Country")
+    pie_industry = make_pie(df, "industry", "Industry")
+
+    # 棒グラフと円グラフの配置
+    st.plotly_chart(bar, use_container_width=True)
+    col1, col2, col3 = st.columns(3)
+    col1.plotly_chart(pie_firm, use_container_width=True)
+    col2.plotly_chart(pie_country, use_container_width=True)
+    col3.plotly_chart(pie_industry, use_container_width=True)
+
+    # テーブル
+    df_table = make_table(df)
+    grid_options = set_aggrid_configure(df_table)
+    AgGrid(
+        df_table, gridOptions=grid_options, fit_columns_on_grid_load=True, height=750
+    )
+
+
+def load_config():
+    """ログイン情報読み込み"""
+    with open("./config.yaml") as file:
+        config = yaml.load(file, Loader=yaml.SafeLoader)
+
+    authenticator = stauth.Authenticate(
+        config["credentials"],
+        config["cookie"]["name"],
+        config["cookie"]["key"],
+        config["cookie"]["expiry_days"],
+        config["preauthorized"],
+    )
+
+    return authenticator
 
 
 @st.cache(allow_output_mutation=True)
@@ -35,6 +156,7 @@ def get_df():
     df = df.sort_values(
         ["report_date", "firm_name", "issuer"], ascending=[False, True, True]
     )
+
     return df
 
 
@@ -159,101 +281,23 @@ def set_aggrid_configure(df):
     return grid_options
 
 
-# サイト設定
-st.set_page_config(
-    page_title="Firm Inspection Reports Watcher",
-    page_icon=":dog:",
-    initial_sidebar_state="collapsed",
-    layout="wide",  # スクリーン全体を使ってグラフが表示されるようにする
-)
-
-# ソースデータ取り込み
-df = get_df()
-
-# サイドバー
-# CSVダウンロード
-st.sidebar.markdown("## Download")
-csv = make_csv(df)
-st.sidebar.download_button(
-    label="Download CSV file",
-    data=csv,
-    file_name="firm_inspection_reports.csv",
-    mime="text/csv",
-)
-
-# セッティング
-st.sidebar.markdown("## Settings")
-
-# 選択肢作成
-vars_firm_name, default_firm_name, vars_countries, vars_industries = make_vars(df)
-
-# 検索フォーム
-input_word = st.sidebar.text_input(
-    label="Search text",
-    help='Search from "Type of audit and related area affected"'
-    + ' and "Description of the deficiencies identified".',
-    value="",
-    placeholder="Enter keywords",
-)
-
-# レポート範囲選択
-min_value, max_value = make_min_max_date(df)
-start_date, end_date = st.sidebar.slider(
-    "Report date",
-    min_value=min_value,
-    max_value=max_value,
-    value=(min_value, max_value),
-    format="YY-MM-DD",
-)
-
-# ファーム選択
-all_firm = st.sidebar.checkbox("Select All (Firm name)")
-
-if all_firm:
-    firm_name_multi_selected = st.sidebar.multiselect(
-        "Firm name", vars_firm_name, default=vars_firm_name
-    )
-else:
-    firm_name_multi_selected = st.sidebar.multiselect(
-        "Firm name", vars_firm_name, default=default_firm_name
+if __name__ == "__main__":
+    # サイト設定
+    st.set_page_config(
+        page_title="Firm Inspection Reports Watcher",
+        page_icon=":dog:",
+        initial_sidebar_state="collapsed",
+        layout="wide",  # スクリーン全体を使ってグラフが表示されるようにする
     )
 
-# 国名選択
-countries_multi_selected = st.sidebar.multiselect(
-    "Country", vars_countries, default=vars_countries
-)
+    # ログイン情報読み込み
+    authenticator = load_config()
 
-# 産業選択
-industries_multi_selected = st.sidebar.multiselect(
-    "Industry", vars_industries, default=vars_industries
-)
+    # ログインメソッドで入力フォームを配置
+    name, authentication_status, _ = authenticator.login("Login", "main")
 
-# レイアウト
-st.title("Part I.A: Audits with Unsupported Opinions")
-
-# グラフ用df
-df = df[df["firm_name"].isin(firm_name_multi_selected)]
-df = df[df["country"].isin(countries_multi_selected)]
-df = df[df["industry"].isin(industries_multi_selected)]
-df = df[(df["report_date"] >= start_date) & (df["report_date"] <= end_date)]
-df = df[df["search_text"].str.contains(input_word)]
-
-# 棒グラフ
-bar = make_bar(df, "report_date", "Issuer", "report_date", "issuer")
-
-# 円グラフ
-pie_firm = make_pie(df, "firm_name", "Firm name")
-pie_country = make_pie(df, "country", "Country")
-pie_industry = make_pie(df, "industry", "Industry")
-
-# 棒グラフと円グラフの配置
-st.plotly_chart(bar, use_container_width=True)
-col1, col2, col3 = st.columns(3)
-col1.plotly_chart(pie_firm, use_container_width=True)
-col2.plotly_chart(pie_country, use_container_width=True)
-col3.plotly_chart(pie_industry, use_container_width=True)
-
-# テーブル
-df_table = make_table(df)
-grid_options = set_aggrid_configure(df_table)
-AgGrid(df_table, gridOptions=grid_options, fit_columns_on_grid_load=True, height=750)
+    # authenticaton_statusの状態で処理を場合分け
+    if authentication_status:
+        main()
+    elif authentication_status is False:
+        st.error("Username / Password is incorrect")

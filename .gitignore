@@ -5,4 +5,5 @@ dev/
 pdf/
 
 # file
+config.yaml
 *.db
