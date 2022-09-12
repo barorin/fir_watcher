@@ -10,7 +10,9 @@ engine = create_engine(
 )
 
 # 重複チェック用
-links = pd.read_sql(sql="SELECT pdf_url FROM links", con=engine)
+links = pd.read_sql(
+    sql="SELECT pdf_url FROM links ORDER BY report_date DESC", con=engine
+)
 
 # 最終のページを取得
 last_page = get_last_page(
@@ -40,7 +42,6 @@ for page in range(1, last_page + 1):
             df = get_report(df, soup)
 
     # 重複チェックしてDBにInsert
-    # insert_db(df, links, "pdf_url", "links", engine)
     for i in range(len(df)):
         record = df.iloc[[i]]
         pdf_url = "".join(record["pdf_url"])
