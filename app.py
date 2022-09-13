@@ -91,7 +91,7 @@ def main():
     df = df[df["search_text"].str.contains(input_word)]
 
     # 棒グラフ
-    bar = make_bar(df, "report_date", "Issuer", "report_date", "issuer")
+    # bar = make_bar(df, "report_date", "Issuer", "report_date", "issuer")
 
     # 円グラフ
     pie_firm = make_pie(df, "firm_name", "Firm name")
@@ -99,7 +99,7 @@ def main():
     pie_industry = make_pie(df, "industry", "Industry")
 
     # 棒グラフと円グラフの配置
-    st.plotly_chart(bar, use_container_width=True)
+    # st.plotly_chart(bar, use_container_width=True)
     col1, col2, col3 = st.columns(3)
     col1.plotly_chart(pie_firm, use_container_width=True)
     col2.plotly_chart(pie_country, use_container_width=True)
@@ -239,13 +239,13 @@ def make_pie(df, column, title):
     return pie
 
 
-@st.experimental_memo
-def make_bar(df, column, title, x, y):
-    """棒グラフ作成"""
-    df_bar = df.groupby(column, as_index=False).count()
-    bar = px.bar(df_bar, title=title, x=x, y=y)
+# @st.experimental_memo
+# def make_bar(df, column, title, x, y):
+#     """棒グラフ作成"""
+#     df_bar = df.groupby(column, as_index=False).count()
+#     bar = px.bar(df_bar, title=title, x=x, y=y)
 
-    return bar
+#     return bar
 
 
 @st.experimental_memo
@@ -275,6 +275,7 @@ def set_aggrid_configure(df):
     gb.configure_column(
         "report_date", type=["customDateTimeFormat"], custom_format_string="yyyy-MM-dd"
     )
+    gb.configure_column("type_of_audit_and_related_area_affected", width=350)
     gb.configure_column("description_of_the_deficiencies_identified", width=700)
     grid_options = gb.build()
 
