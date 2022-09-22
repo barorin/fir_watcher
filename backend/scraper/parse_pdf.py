@@ -11,7 +11,7 @@ engine = create_engine(
 
 # 重複チェック用
 reports = pd.read_sql(sql="SELECT file_name_issuer FROM reports", con=engine)
-# 抽出元df
+# 抽出元df（2020-12-17以降分）
 df = pd.read_sql(
     sql="SELECT * FROM links WHERE report_date >= '2020-12-17' \
         ORDER BY report_date DESC",
@@ -34,7 +34,7 @@ for row in df.itertuples():
         file_name_issuer = "".join(record["file_name_issuer"])
 
         if file_name_issuer not in reports["file_name_issuer"].values:
-            # DBにcheck_columnの要素がなければInsert
+            # DBにfile_name_issuerの要素がなければInsert
             record.to_sql("reports", con=engine, if_exists="append", index=False)
         else:
             # 内側のループから抜ける

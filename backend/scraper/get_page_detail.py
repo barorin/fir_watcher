@@ -47,7 +47,7 @@ for page in range(1, last_page + 1):
         pdf_url = "".join(record["pdf_url"])
 
         if pdf_url not in links["pdf_url"].values:
-            # DBにcheck_columnの要素がなければInsert
+            # DBにpdf_urlの要素がなければInsert
             record.to_sql("links", con=engine, if_exists="append", index=False)
         else:
             # 内側のループから抜ける

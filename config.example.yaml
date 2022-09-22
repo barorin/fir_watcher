@@ -1,0 +1,13 @@
+credentials:
+  usernames:
+    testuser:
+      email: user@test.com
+      name: username
+      password: hashed_password
+cookie:
+  expiry_days: 30
+  key: cookie_key
+  name: cookie_name
+preauthorized:
+  emails:
+    - preauthorized@test.com

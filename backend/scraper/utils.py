@@ -23,7 +23,7 @@ def get_soup(url):
     Args:
         url(str): クロール先のURL
     Returns:
-        soup(str): HTML
+        soup(BeautifulSoup): HTML
     """
     # driverのオプション設定
     options = webdriver.ChromeOptions()
@@ -77,17 +77,17 @@ def get_report(df, soup):
     """pdf_urlからファイル名を抽出
 
     Args:
-        df(dataframe): 一覧ページから取得した情報を格納するdf
-        soup(str): soup
+        df(DataFrame): 一覧ページから取得した情報を格納するdf
+        soup(BeautifulSoup): soup
     Returns:
-        df(dataframe): Argsのdf（一覧ページから取得した情報格納後）
+        df(DataFrame): Argsのdf（一覧ページから取得した情報格納後）
     """
 
     def get_file_name(row):
         """pdf_urlからファイル名を抽出
 
         Args:
-            row(dataframe): df
+            row(str): links["pdf_url"]の要素
         Returns:
             file_name(str): pdf_urlからファイル名を抽出（拡張子付）
         """
@@ -131,7 +131,7 @@ def get_pdf(folder_path, urls):
     """pdfをダウンロード
     Args:
         folder_path(str): pdfの格納先
-        urls(list): ダウンロードURLのリスト
+        urls(list[str]): ダウンロードURLのリスト
     Returns:
         None
     """
@@ -173,10 +173,10 @@ def read_pdf(file_path):
 def parse_pdf(row, text):
     """pdfのパース
     Args:
-        row(df): linksテーブルの行データ
+        row(Pandas): linksテーブルの行データ
         text(str): pdfのテキストデータ
     Returns:
-        details(df): パース後のdf（reportsテーブルの様式）
+        details(DataFrame): パース後のdf（reportsテーブルの様式）
     """
     issuers_and_industries = re.findall(r"(Issuer [A-W].*?)Type", text)
 
