@@ -74,7 +74,7 @@ def get_last_page(url):
 
 
 def get_report(df, soup):
-    """pdf_urlからファイル名を抽出
+    """一覧ページから情報を抽出
 
     Args:
         df(DataFrame): 一覧ページから取得した情報を格納するdf
@@ -82,22 +82,6 @@ def get_report(df, soup):
     Returns:
         df(DataFrame): Argsのdf（一覧ページから取得した情報格納後）
     """
-
-    def get_file_name(row):
-        """pdf_urlからファイル名を抽出
-
-        Args:
-            row(str): links["pdf_url"]の要素
-        Returns:
-            file_name(str): pdf_urlからファイル名を抽出（拡張子付）
-        """
-        pattern = re.compile(r"\/[^\/]*pdf")
-        res = re.search(pattern, row)
-        res = res.group()
-        file_name = res.replace("/", "")
-
-        return file_name
-
     for tag in soup.find_all(class_="media-body sf-media-body"):
         firm_name = tag.find("a").get_text()
         country_and_report_date = tag.find_all(class_="lead-text-st")
@@ -121,7 +105,9 @@ def get_report(df, soup):
 
         df = pd.concat([df, tmp], ignore_index=True)
 
-    df["file_name"] = df["pdf_url"].apply(get_file_name)
+    df["file_name"] = df["pdf_url"].apply(
+        lambda x: re.search(r"\/[^\/]*pdf", x).group().replace("/", "")
+    )
 
     return df
 
