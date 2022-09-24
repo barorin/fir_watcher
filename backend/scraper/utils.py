@@ -3,6 +3,7 @@ import os
 import re
 import time
 import urllib.request
+from typing import List
 
 import chromedriver_binary  # NOQA
 import fitz
@@ -17,7 +18,7 @@ stop = stop_after_attempt(5)  # リトライ回数
 
 
 @retry(wait=wait, stop=stop)
-def get_soup(url):
+def get_soup(url: str) -> BeautifulSoup:
     """soup取得
 
     Args:
@@ -57,7 +58,7 @@ def get_soup(url):
 
 
 @retry(wait=wait, stop=stop)
-def get_last_page(url):
+def get_last_page(url: str) -> int:
     """最終ページを取得
 
     Args:
@@ -68,12 +69,12 @@ def get_last_page(url):
     soup = get_soup(url)
     last_page = re.search(
         r"(\d)+", soup.find(class_="hawk-pagination__total-text").get_text()
-    ).group()
+    ).group()  # type: ignore
 
     return int(last_page)
 
 
-def get_report(df, soup):
+def get_report(df: pd.DataFrame, soup: BeautifulSoup) -> pd.DataFrame:
     """一覧ページから情報を抽出
 
     Args:
@@ -84,15 +85,27 @@ def get_report(df, soup):
     """
     for tag in soup.find_all(class_="media-body sf-media-body"):
         firm_name = tag.find("a").get_text()
+        # -> 'Baker Newman & Noyes, P.A. Limited Liability Company'
+
         country_and_report_date = tag.find_all(class_="lead-text-st")
+        # -> [<div class="lead-text-st">United States</div>,
+        #      <div class="lead-text-st">May 26, 2022</div>]
+
         country = country_and_report_date[0].get_text()
-        report_date = country_and_report_date[1].get_text()
-        report_date = report_date.replace(".", "")  # Apr.とかの.を削除
+        # -> 'United States'
+
+        report_date = (
+            country_and_report_date[1].get_text().replace(".", "")  # Apr.とかの.を削除
+        )
+        # -> 'May 26, 2022'
         report_date = datetime.datetime.strptime(report_date, "%b %d, %Y")
         report_date = datetime.date(
             report_date.year, report_date.month, report_date.day
         )
+        # -> datetime.date(2022, 5, 26)
+
         pdf_url = tag.find("a").get("href")
+        # -> 'https://...'
 
         tmp = pd.DataFrame(
             {
@@ -106,18 +119,18 @@ def get_report(df, soup):
         df = pd.concat([df, tmp], ignore_index=True)
 
     df["file_name"] = df["pdf_url"].apply(
-        lambda x: re.search(r"\/[^\/]*pdf", x).group().replace("/", "")
+        lambda x: re.search(r"\/[^\/]*pdf", x).group().replace("/", "")  # type: ignore
     )
 
     return df
 
 
 @retry(wait=wait, stop=stop)
-def get_pdf(folder_path, urls):
+def get_pdf(folder_path: str, urls: List[str]) -> None:
     """pdfをダウンロード
     Args:
         folder_path(str): pdfの格納先
-        urls(list[str]): ダウンロードURLのリスト
+        urls(List[str]): ダウンロードURLのリスト
     Returns:
         None
     """
@@ -126,7 +139,7 @@ def get_pdf(folder_path, urls):
 
     for i, url in enumerate(urls):
         res = re.search(pattern, url)
-        file_name = res.group()
+        file_name = res.group()  # type: ignore
         file_path = folder_path + file_name
 
         if not os.path.isfile(file_path):
@@ -135,7 +148,7 @@ def get_pdf(folder_path, urls):
             time.sleep(3)
 
 
-def read_pdf(file_path):
+def read_pdf(file_path: str) -> str:
     """pdfの読み取り
     Args:
         file_path(str): pdfのファイルパス
@@ -156,7 +169,7 @@ def read_pdf(file_path):
     return text
 
 
-def parse_pdf(row, text):
+def parse_pdf(row: pd.core.frame.Pandas, text: str) -> pd.DataFrame:
     """pdfのパース
     Args:
         row(Pandas): linksテーブルの行データ
@@ -165,38 +178,46 @@ def parse_pdf(row, text):
         details(DataFrame): パース後のdf（reportsテーブルの様式）
     """
     issuers_and_industries = re.findall(r"(Issuer [A-W].*?)Type", text)
+    # -> ['Issuer A) and industry...', 'Issuer B...', ...]
 
     if issuers_and_industries:
         if issuers_and_industries[0]:
-            if re.search(r"Issuer A[^)].*", issuers_and_industries[0]) is None:
-                issuer_a = "Issuer A"
-            else:
-                issuer_a = re.search(
-                    r"Issuer A[^)].*", issuers_and_industries[0]
-                ).group()
+            issuer_a = re.search(r"Issuer A[^)].*", issuers_and_industries[0])
+            issuer_a = (
+                "Issuer A" if issuer_a is None else issuer_a.group()  # type: ignore
+            )
             issuers_and_industries[0] = issuer_a
+            # -> ['Issuer A – Health Care', 'Issuer B – Information Technology', ...]
 
         issuers = [
-            re.search(r"(Issuer [A-W])", iss).group(1) for iss in issuers_and_industries
-        ]
-
-        industries = [
-            re.search(r"– (.*)", iss).group(1) if re.search(r"– (.*)", iss) else "None"
+            re.search(r"(Issuer [A-W])", iss).group(1)  # type: ignore
             for iss in issuers_and_industries
         ]
+        # -> ['Issuer A', 'Issuer B', ...]
+
+        industries = [
+            re.search(r"– (.*)", iss).group(1)  # type: ignore
+            if re.search(r"– (.*)", iss)
+            else "None"
+            for iss in issuers_and_industries
+        ]
+        # ゆらぎ修正
         industries = [
             "Health Care" if iss == "Healthcare" else iss for iss in industries
-        ]  # ゆらぎ修正
+        ]
+        # -> ['Health Care', 'Information Technology', ...]
 
         type_of_audit_and_related_area_affected = re.findall(
             r"(In our review.*?)Description", text
         )
+        # -> ['In our review, ...', 'In our review of...', ...]
 
         description_of_the_deficiencies_identified = re.findall(
             r"Description of the (?:deficiencies|deficiency) identified(.*?)"
             + r"(?:Issuer|Audits with|PART I\.B|Part I\.B)",
             text,
         )
+        # -> ['With respect to...', ''With respect to...', ...]
 
         # df作成
         details = pd.DataFrame(issuers, columns=["issuer"])
