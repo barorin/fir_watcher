@@ -14,9 +14,13 @@ This app extracts Issuers from PCAOB's Firm Inspection Reports(>=2020-12-17) and
 
 ## Usage
 
-```
+```bash
+# Install libraries
+cd fir_catcher
+pip install -r requirements.txt
+
 # Create DB
-cd fir_catcher/backend
+cd backend
 python models.py
 
 # Crawling and Scraping

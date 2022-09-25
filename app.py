@@ -84,11 +84,15 @@ def main():
     st.caption("Source: Public Company Accounting Oversight Board, www.pcaobus.org")
 
     # グラフ用df
-    df = df[df["firm_name"].isin(firm_name_multi_selected)]
-    df = df[df["country"].isin(countries_multi_selected)]
-    df = df[df["industry"].isin(industries_multi_selected)]
-    df = df[(df["report_date"] >= start_date) & (df["report_date"] <= end_date)]
-    df = df[df["search_text"].str.contains(input_word)]
+    df = filter_df(
+        df,
+        firm_name_multi_selected,
+        countries_multi_selected,
+        industries_multi_selected,
+        start_date,
+        end_date,
+        input_word,
+    )
 
     # 棒グラフ
     # bar = make_bar(df, "report_date", "Issuer", "report_date", "issuer")
@@ -221,6 +225,29 @@ def make_min_max_date(df):
     max_value = df["report_date"].max().to_pydatetime()
 
     return min_value, max_value
+
+
+@st.experimental_memo
+def filter_df(
+    df,
+    firm_name_multi_selected,
+    countries_multi_selected,
+    industries_multi_selected,
+    start_date,
+    end_date,
+    input_word,
+):
+    """dfにフィルターかける"""
+    df = df[
+        (df["firm_name"].isin(firm_name_multi_selected))
+        & (df["country"].isin(countries_multi_selected))
+        & (df["industry"].isin(industries_multi_selected))
+        & (df["report_date"] >= start_date)
+        & (df["report_date"] <= end_date)
+        & (df["search_text"].str.contains(input_word))
+    ]
+
+    return df
 
 
 @st.experimental_memo
