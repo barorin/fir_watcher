@@ -45,7 +45,7 @@ streamlit run app.py
 
 ## Author
 
-[Blog - Python と！](https://python-to.hateblo.jp/)
+[Blog - barorin&?](https://barorin-to.vercel.app)
 
 ## Licence
 
