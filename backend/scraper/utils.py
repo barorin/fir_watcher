@@ -3,7 +3,7 @@ import os
 import re
 import time
 import urllib.request
-from typing import List
+from typing import Any, List
 
 import chromedriver_binary  # NOQA
 import fitz
@@ -169,7 +169,7 @@ def read_pdf(file_path: str) -> str:
     return text
 
 
-def parse_pdf(row: pd.core.frame.Pandas, text: str) -> pd.DataFrame:
+def parse_pdf(row: Any, text: str) -> pd.DataFrame:
     """pdfのパース
     Args:
         row(Pandas): linksテーブルの行データ
