@@ -16,7 +16,7 @@ os.makedirs("./pdf", exist_ok=True)
 
 # 2020-12-17以降のPDFをダウンロード
 links = pd.read_sql(
-    sql="SELECT pdf_url FROM links WHERE report_date >= '2020-12-17", con=engine
+    sql="SELECT pdf_url FROM links WHERE report_date >= '2020-12-17'", con=engine
 )
 get_pdf("./pdf", links["pdf_url"])
 print("Done get_pdf")
