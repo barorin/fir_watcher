@@ -4,7 +4,7 @@
 
 ## Overview
 
-This app extracts Issuers from PCAOB's Firm Inspection Reports(>=2020-12-17) and visualizes them in Steamlit.
+PCAOB から 2020/12/17 以降の Firm Inspection Reports をダウンロードし、Issuer をパースして Streamlit で可視化するという何ともニッチなウェブアプリです。
 
 ## Requirement
 
