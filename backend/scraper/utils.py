@@ -20,7 +20,6 @@ stop = stop_after_attempt(5)  # リトライ回数
 @retry(wait=wait, stop=stop)
 def get_soup(url: str) -> BeautifulSoup:
     """soup取得
-
     Args:
         url(str): クロール先のURL
     Returns:
@@ -60,7 +59,6 @@ def get_soup(url: str) -> BeautifulSoup:
 @retry(wait=wait, stop=stop)
 def get_last_page(url: str) -> int:
     """最終ページを取得
-
     Args:
         url(str): クロール先のURL
     Returns:
@@ -76,7 +74,6 @@ def get_last_page(url: str) -> int:
 
 def get_report(df: pd.DataFrame, soup: BeautifulSoup) -> pd.DataFrame:
     """一覧ページから情報を抽出
-
     Args:
         df(DataFrame): 一覧ページから取得した情報を格納するdf
         soup(BeautifulSoup): soup
