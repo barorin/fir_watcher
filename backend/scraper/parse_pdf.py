@@ -46,3 +46,5 @@ for row in df.itertuples():
             continue
         # 外側のループから抜ける
         break
+
+print("Done parse_pdf")
