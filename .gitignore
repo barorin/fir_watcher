@@ -7,3 +7,4 @@ pdf/
 # file
 config.yaml
 *.db
+*.sh
