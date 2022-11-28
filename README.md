@@ -4,7 +4,7 @@
 
 ## Overview
 
-PCAOB から 2020/12/17 以降の Firm Inspection Reports をダウンロードし、Issuer をパースして Streamlit で可視化するという何ともニッチなウェブアプリです。
+PCAOB から 2020/12/17 以降の Firm Inspection Reports をダウンロードし、Part I.A の Issuer をパースして Streamlit で可視化するという何ともニッチなウェブアプリです。
 
 ## Requirement
 
