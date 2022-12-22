@@ -1,6 +1,5 @@
 import pandas as pd
 from sqlalchemy import create_engine
-
 from utils import get_last_page, get_report, get_soup
 
 # DB接続

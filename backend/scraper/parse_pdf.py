@@ -1,6 +1,5 @@
 import pandas as pd
 from sqlalchemy import create_engine
-
 from utils import parse_pdf, read_pdf
 
 # DB接続
