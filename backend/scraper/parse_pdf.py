@@ -13,7 +13,7 @@ reports = pd.read_sql(sql="SELECT file_name_issuer FROM reports", con=engine)
 # 抽出元df（2020-12-17以降分）
 df = pd.read_sql(
     sql="SELECT * FROM links WHERE report_date >= '2020-12-17' \
-        ORDER BY report_date ASC, file_name ASC",
+        ORDER BY report_date DESC, file_name DESC",
     con=engine,
 )
 
@@ -39,7 +39,7 @@ for row in df.itertuples():
             else:
                 # 内側のループから抜ける
                 print(f'"{file_name_issuer}" was a duplicate.')
-                break
+                # break
         else:
             # 内側のループが正常に終了したら次の外側ループへ
             continue

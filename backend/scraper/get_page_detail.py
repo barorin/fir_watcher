@@ -10,7 +10,7 @@ engine = create_engine(
 
 # 重複チェック用
 links = pd.read_sql(
-    sql="SELECT pdf_url FROM links ORDER BY report_date ASC", con=engine
+    sql="SELECT pdf_url FROM links ORDER BY report_date DESC", con=engine
 )
 
 # 最終のページを取得
@@ -51,7 +51,7 @@ for page in range(1, last_page + 1):
         else:
             # 内側のループから抜ける
             print(f'"{pdf_url}" was a duplicate.')
-            break
+            # break
     else:
         # 内側のループが正常に終了したら次の外側ループへ
         continue
