@@ -10,7 +10,7 @@ engine = create_engine(
 
 # 重複チェック用
 links = pd.read_sql(
-    sql="SELECT pdf_url FROM links ORDER BY report_date DESC", con=engine
+    sql="SELECT pdf_url FROM links ORDER BY report_date ASC", con=engine
 )
 
 # 最終のページを取得
