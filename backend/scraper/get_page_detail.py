@@ -51,6 +51,7 @@ for page in range(1, last_page + 1):
         else:
             # 内側のループから抜ける
             print(f'"{pdf_url}" was a duplicate.')
+            # TODO: 過去にデータが追加されている場合、ここでbreakするとそこまで到達できない
             # break
     else:
         # 内側のループが正常に終了したら次の外側ループへ
