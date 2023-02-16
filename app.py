@@ -161,6 +161,18 @@ def get_df():
         ["report_date", "firm_name", "issuer"], ascending=[False, True, True]
     )
 
+    # expandedがある場合は、そっちを残して古い方を消す
+    expanded = df[df["pdf_url"].str.contains("-expanded.pdf")]
+    for expanded_url in set(expanded["pdf_url"]):
+        base_url = re.search(r".*\d{3}-\d{4}-\d{3}", expanded_url).group()
+
+        # base_urlを含む、かつ、'-expanded'を含まない
+        drop_index = df.index[
+            df["pdf_url"].str.contains(base_url)
+            & ~df["pdf_url"].str.contains("-expanded.pdf")
+        ]
+        df.drop(drop_index, inplace=True)
+
     return df
 
 
