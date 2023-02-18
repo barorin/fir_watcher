@@ -133,7 +133,7 @@ def load_config():
     return authenticator
 
 
-@st.cache(allow_output_mutation=True)
+@st.cache_resource
 def get_db_engin():
     """DB接続"""
     SQLALCHEMY_DATABASE_URL = "sqlite:///./backend/fir.db"
@@ -144,7 +144,7 @@ def get_db_engin():
     return engine
 
 
-@st.experimental_memo
+@st.cache_data
 def get_df():
     """最初のdf取り込み"""
     engine = get_db_engin()
@@ -176,7 +176,7 @@ def get_df():
     return df
 
 
-@st.experimental_memo
+@st.cache_data
 def make_csv(df):
     """ダウンロード用CSVの作成"""
     df_download = df[
@@ -196,7 +196,7 @@ def make_csv(df):
     return csv
 
 
-@st.experimental_memo
+@st.cache_data
 def make_vars(df):
     """選択肢作成"""
     # ファーム選択用
@@ -230,7 +230,7 @@ def make_vars(df):
     return vars_firm_name, default_firm_name, vars_countries, vars_industries
 
 
-@st.experimental_memo
+@st.cache_data
 def make_min_max_date(df):
     """report_dateの最小値と最大値"""
     min_value = df["report_date"].min().to_pydatetime()
@@ -239,7 +239,7 @@ def make_min_max_date(df):
     return min_value, max_value
 
 
-@st.experimental_memo
+@st.cache_data
 def filter_df(
     df,
     firm_name_multi_selected,
@@ -262,7 +262,7 @@ def filter_df(
     return df
 
 
-@st.experimental_memo
+@st.cache_data
 def make_pie(df, column, title):
     """円グラフ作成"""
     df = df[column].value_counts(sort=True)
@@ -278,7 +278,7 @@ def make_pie(df, column, title):
     return pie
 
 
-# @st.experimental_memo
+# @st.cache_data
 # def make_bar(df, column, title, x, y):
 #     """棒グラフ作成"""
 #     df_bar = df.groupby(column, as_index=False).count()
@@ -287,7 +287,7 @@ def make_pie(df, column, title):
 #     return bar
 
 
-@st.experimental_memo
+@st.cache_data
 def make_table(df):
     """テーブル作成"""
     df_table = df[
@@ -305,7 +305,7 @@ def make_table(df):
     return df_table
 
 
-@st.experimental_memo
+@st.cache_data
 def set_aggrid_configure(df):
     """aggridのオプション設定"""
     gb = GridOptionsBuilder.from_dataframe(df)
