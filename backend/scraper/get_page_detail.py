@@ -10,7 +10,7 @@ engine = create_engine(
 
 # 重複チェック用
 links = pd.read_sql(
-    sql="SELECT pdf_url FROM links ORDER BY report_date DESC", con=engine
+    sql="SELECT file_name FROM links ORDER BY report_date DESC", con=engine
 )
 
 # 最終のページを取得
@@ -43,14 +43,14 @@ for page in range(1, last_page + 1):
     # 重複チェックしてDBにInsert
     for i in range(len(df)):
         record = df.iloc[[i]]
-        pdf_url = "".join(record["pdf_url"])
+        file_name = "".join(record["file_name"])
 
-        if pdf_url not in links["pdf_url"].values:
-            # DBにpdf_urlの要素がなければInsert
+        if file_name not in links["file_name"].values:
+            # DBにfile_nameの要素がなければInsert
             record.to_sql("links", con=engine, if_exists="append", index=False)
         else:
             # 内側のループから抜ける
-            print(f'"{pdf_url}" was a duplicate.')
+            print(f'Duplicate: "{file_name}"')
             # TODO: 過去にデータが追加されている場合、ここでbreakするとそこまで到達できない
             # break
     else:
