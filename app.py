@@ -162,15 +162,28 @@ def get_df():
     )
 
     # expandedがある場合は、そっちを残して古い方を消す
-    expanded = df[df["pdf_url"].str.contains("-expanded.pdf")]
+    expanded = df[df.pdf_url.str.contains("-expanded.pdf")]
     for expanded_url in set(expanded["pdf_url"]):
         base_num = re.search(r"\d{3}-\d{4}-\d{3}", expanded_url).group()
         # -> 104-2021-175
 
-        # base_numを含む、かつ、'-expanded'を含まない
+        # base_numを含む、かつ、'-expanded'を含まない方を消す
         drop_index = df.index[
             df["pdf_url"].str.contains(base_num)
-            & ~df["pdf_url"].str.contains("-expanded.pdf")
+            & ~df.pdf_url.str.contains("-expanded.pdf")
+        ]
+        df.drop(drop_index, inplace=True)
+
+    # xxx-xxxx-xxxaの末尾のaがある場合は、そっちを残して古い方を消す
+    a = df[df.pdf_url.str.match(r".*\d{3}-\d{4}-\d{3}a.*")]
+    for a_url in set(a["pdf_url"]):
+        base_num = re.search(r"\d{3}-\d{4}-\d{3}", a_url).group()
+        # -> 104-2021-175
+
+        # base_numを含む、かつ、'a'を含まない方を消す
+        drop_index = df.index[
+            df["pdf_url"].str.contains(base_num)
+            & ~df.pdf_url.str.match(r".*\d{3}-\d{4}-\d{3}a.*")
         ]
         df.drop(drop_index, inplace=True)
 
