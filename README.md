@@ -45,7 +45,7 @@ streamlit run app.py
 
 ## Author
 
-[Twitter - @barorinable](https://twitter.com/barorinable)  
+[Mastodon - @barorin](https://fedibird.com/@barorin)  
 [Blog - barorin&?](https://barorin-to.com)
 
 ## Licence
