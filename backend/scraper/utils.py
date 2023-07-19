@@ -92,7 +92,7 @@ def get_report(df: pd.DataFrame, soup: BeautifulSoup) -> pd.DataFrame:
         # -> 'United States'
 
         report_date = (
-            country_and_report_date[1].get_text().replace(".", "")  # Apr.とかの.を削除
+            country_and_report_date[-1].get_text().replace(".", "")  # Apr.とかの.を削除
         )
         # -> 'May 26, 2022'
         report_date = datetime.datetime.strptime(report_date, "%b %d, %Y")
