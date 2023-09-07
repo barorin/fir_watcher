@@ -25,7 +25,10 @@ for row in df.itertuples():
     text = read_pdf(file_path)
 
     # パース
-    details = parse_pdf(row, text)
+    try:
+        details = parse_pdf(row, text)
+    except Exception as e:
+        print(e)
 
     # 重複チェックしてDBにInsert
     if details is not None:
@@ -36,10 +39,10 @@ for row in df.itertuples():
             if file_name_issuer not in reports["file_name_issuer"].values:
                 # DBにfile_name_issuerの要素がなければInsert
                 record.to_sql("reports", con=engine, if_exists="append", index=False)
-            else:
-                # 内側のループから抜ける
-                print(f'"{file_name_issuer}" was a duplicate.')
-                # break
+            # else:
+            # 内側のループから抜ける
+            #  print(f'"{file_name_issuer}" was a duplicate.')
+            # break
         else:
             # 内側のループが正常に終了したら次の外側ループへ
             continue
